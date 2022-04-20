@@ -1,0 +1,46 @@
+From 467c77a8a107cb5483cc6a158bebd429f0fc8f44 Mon Sep 17 00:00:00 2001
+From: John Firebaugh <john.firebaugh@gmail.com>
+Date: Wed, 20 Apr 2022 14:43:52 -0700
+Subject: [PATCH 2/2] WIP
+
+---
+ bazel/BUILD                            | 6 ++++++
+ bazel/emscripten_toolchain/BUILD.bazel | 2 +-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/bazel/BUILD b/bazel/BUILD
+index 72ac092..950eaf7 100644
+--- a/bazel/BUILD
++++ b/bazel/BUILD
+@@ -56,9 +56,15 @@ alias(
+     }),
+ )
+ 
++constraint_value(
++    name = "os_emscripten",
++    constraint_setting = "@platforms//os",
++)
++
+ platform(
+     name = "platform_wasm",
+     constraint_values = [
+         "@platforms//cpu:wasm32",
++        ":os_emscripten",
+     ],
+ )
+diff --git a/bazel/emscripten_toolchain/BUILD.bazel b/bazel/emscripten_toolchain/BUILD.bazel
+index e29286b..129930e 100644
+--- a/bazel/emscripten_toolchain/BUILD.bazel
++++ b/bazel/emscripten_toolchain/BUILD.bazel
+@@ -5,7 +5,7 @@ package(default_visibility = ["//visibility:public"])
+ # Name depends on rules_nodejs version being used.
+ # https://github.com/emscripten-core/emsdk/issues/1020
+ # https://github.com/bazelbuild/rules_nodejs/issues/3375
+-node_files = "@nodejs_host//:node_files" if existing_rule("@nodejs_host//:node_files") else "@nodejs//:node_files"
++node_files = "@nodejs_host//:node_files"
+ 
+ filegroup(
+     name = "common-script-includes",
+-- 
+2.32.0 (Apple Git-132)
+

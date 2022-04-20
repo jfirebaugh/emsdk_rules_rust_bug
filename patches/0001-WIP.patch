@@ -1,0 +1,113 @@
+From 345a28c640dc3704c32f5e6413f241ae014a3085 Mon Sep 17 00:00:00 2001
+From: John Firebaugh <john.firebaugh@gmail.com>
+Date: Wed, 20 Apr 2022 14:49:59 -0700
+Subject: [PATCH] WIP
+
+---
+ rust/platform/cpu/BUILD.bazel     | 4 ++--
+ rust/platform/os/BUILD.bazel      | 6 ++++++
+ rust/platform/platform.bzl        | 8 ++++++++
+ rust/platform/triple_mappings.bzl | 8 +++++++-
+ rust/private/rustc.bzl            | 4 ++--
+ 5 files changed, 25 insertions(+), 5 deletions(-)
+
+diff --git a/rust/platform/cpu/BUILD.bazel b/rust/platform/cpu/BUILD.bazel
+index 36e026a..bfdcc69 100644
+--- a/rust/platform/cpu/BUILD.bazel
++++ b/rust/platform/cpu/BUILD.bazel
+@@ -1,6 +1,6 @@
+-constraint_value(
++alias(
+     name = "wasm32",
+-    constraint_setting = "@platforms//cpu",
++    actual = "@platforms//cpu:wasm32",
+     visibility = ["//visibility:public"],
+ )
+ 
+diff --git a/rust/platform/os/BUILD.bazel b/rust/platform/os/BUILD.bazel
+index 5c2d48a..402d3ad 100644
+--- a/rust/platform/os/BUILD.bazel
++++ b/rust/platform/os/BUILD.bazel
+@@ -10,6 +10,12 @@ constraint_value(
+     visibility = ["//visibility:public"],
+ )
+ 
++constraint_value(
++    name = "emscripten",
++    constraint_setting = "@platforms//os",
++    visibility = ["//visibility:public"],
++)
++
+ filegroup(
+     name = "distro",
+     srcs = [
+diff --git a/rust/platform/platform.bzl b/rust/platform/platform.bzl
+index ca3bef9..fb02720 100644
+--- a/rust/platform/platform.bzl
++++ b/rust/platform/platform.bzl
+@@ -70,6 +70,14 @@ def declare_config_settings():
+         ],
+     )
+ 
++#    native.platform(
++#        name = "wasm_emscripten",
++#        constraint_values = [
++#            str(Label("//rust/platform/cpu:wasm32")),
++#            str(Label("//rust/platform/os:emscripten")),
++#        ],
++#    )
++
+     native.platform(
+         name = "wasi",
+         constraint_values = [
+diff --git a/rust/platform/triple_mappings.bzl b/rust/platform/triple_mappings.bzl
+index 50a9449..6bf36cd 100644
+--- a/rust/platform/triple_mappings.bzl
++++ b/rust/platform/triple_mappings.bzl
+@@ -30,6 +30,7 @@ SUPPORTED_T2_PLATFORM_TRIPLES = [
+     "i686-unknown-freebsd",
+     "powerpc-unknown-linux-gnu",
+     "s390x-unknown-linux-gnu",
++    "wasm32-unknown-emscripten",
+     "wasm32-unknown-unknown",
+     "wasm32-wasi",
+     "x86_64-apple-ios",
+@@ -102,7 +103,7 @@ _SYSTEM_TO_STATICLIB_EXT = {
+     "android": ".a",
+     "darwin": ".a",
+     "eabi": ".a",
+-    "emscripten": ".js",
++    "emscripten": ".a",
+     "freebsd": ".a",
+     "ios": ".a",
+     "linux": ".a",
+@@ -268,6 +269,11 @@ def triple_to_constraint_set(target_triple):
+             "@rules_rust//rust/platform/cpu:wasm32",
+             "@rules_rust//rust/platform/os:unknown",
+         ]
++    if target_triple == "wasm32-unknown-emscripten":
++        return [
++            "@platforms//cpu:wasm32",
++            "@emsdk//:os_emscripten",
++        ]
+ 
+     triple_struct = triple(target_triple)
+ 
+diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
+index 22f0f19..d8417fe 100644
+--- a/rust/private/rustc.bzl
++++ b/rust/private/rustc.bzl
+@@ -995,8 +995,8 @@ def rustc_compile_action(
+             executable = crate_info.output if crate_info.type == "bin" or crate_info.is_test or out_binary else None,
+         ),
+     ]
+-    if toolchain.target_arch != "wasm32":
+-        providers += establish_cc_info(ctx, attr, crate_info, toolchain, cc_toolchain, feature_configuration, interface_library)
++#    if toolchain.target_arch != "wasm32":
++    providers += establish_cc_info(ctx, attr, crate_info, toolchain, cc_toolchain, feature_configuration, interface_library)
+     if pdb_file:
+         providers.append(OutputGroupInfo(pdb_file = depset([pdb_file])))
+     if dsym_folder:
+-- 
+2.32.0 (Apple Git-132)
+

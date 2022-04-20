@@ -1,0 +1,55 @@
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "rules_rust",
+    sha256 = "b58c63a6d8221f408f8852b4f74f81bc8c7aac9273f3899a74e32e6168a2c624",
+    url = "https://github.com/bazelbuild/rules_rust/releases/download/0.2.1/rules_rust-v0.2.1.tar.gz",
+    patch_args = ["-p1"],
+    patch_tool = "patch",
+    patches = ["//patches:0001-WIP.patch"],
+)
+
+load("@rules_rust//rust:repositories.bzl", "rust_repositories")
+
+rust_repositories(
+    edition = "2018",
+    version = "1.58.1",
+    extra_target_triples = ["wasm32-unknown-emscripten"],
+)
+
+http_archive(
+    name = "cxx.rs",
+    sha256 = "4f27a01b3708f75d3f6f32b22cd9f407ebf1f419922e1b4aa1d78d320cd9844e",
+    strip_prefix = "cxx-1.0.66",
+    url = "https://github.com/dtolnay/cxx/archive/refs/tags/1.0.66.tar.gz",
+)
+
+load("@cxx.rs//tools/bazel:vendor.bzl", "vendor")
+
+vendor(
+    name = "third-party",
+    cargo_version = "1.58.1",
+    lockfile = "@cxx.rs//third-party:Cargo.lock",
+)
+
+http_archive(
+    name = "emsdk",
+    sha256 = "a63f2231f7885901e3e71b2d3283c644469e8731b436809dd72c8fd04d8cb4e7",
+    strip_prefix = "emsdk-e23aac7d1c7d052048e68a0b5987ab99cd15cc6d/bazel",
+    url = "https://github.com/emscripten-core/emsdk/archive/e23aac7d1c7d052048e68a0b5987ab99cd15cc6d.tar.gz",
+    patch_args = ["-p2"],
+    patch_tool = "patch",
+    patches = [
+        "//patches:0001-Switch-to-platforms-based-toolchain-resolution.patch",
+        "//patches:0002-WIP.patch",
+    ],
+)
+
+load("@emsdk//:deps.bzl", emsdk_deps = "deps")
+emsdk_deps()
+
+load("@emsdk//:emscripten_deps.bzl", "emscripten_deps")
+emscripten_deps(emscripten_version = "3.1.4")
+
+load("@emsdk//:toolchains.bzl", "register_emscripten_toolchains")
+register_emscripten_toolchains()
