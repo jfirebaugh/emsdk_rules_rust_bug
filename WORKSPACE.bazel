@@ -18,21 +18,6 @@ rust_repositories(
 )
 
 http_archive(
-    name = "cxx.rs",
-    sha256 = "4f27a01b3708f75d3f6f32b22cd9f407ebf1f419922e1b4aa1d78d320cd9844e",
-    strip_prefix = "cxx-1.0.66",
-    url = "https://github.com/dtolnay/cxx/archive/refs/tags/1.0.66.tar.gz",
-)
-
-load("@cxx.rs//tools/bazel:vendor.bzl", "vendor")
-
-vendor(
-    name = "third-party",
-    cargo_version = "1.58.1",
-    lockfile = "@cxx.rs//third-party:Cargo.lock",
-)
-
-http_archive(
     name = "emsdk",
     sha256 = "a63f2231f7885901e3e71b2d3283c644469e8731b436809dd72c8fd04d8cb4e7",
     strip_prefix = "emsdk-e23aac7d1c7d052048e68a0b5987ab99cd15cc6d/bazel",

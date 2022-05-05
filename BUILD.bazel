@@ -1,43 +1,6 @@
-load("@bazel_skylib//rules:run_binary.bzl", "run_binary")
-load("@rules_rust//rust:defs.bzl", "rust_static_library")
-
-run_binary(
-    name = "codegen",
-    srcs = ["hello-world.rs"],
-    outs = [
-        "hello-world.rs.h",
-        "hello-world.rs.cc",
-    ],
-    args = [
-        "$(location hello-world.rs)",
-        "-o",
-        "$(location hello-world.rs.h)",
-        "-o",
-        "$(location hello-world.rs.cc)",
-    ],
-    tool = "@cxx.rs//:codegen",
-)
-
-rust_static_library(
-    name = "hello-world-rs",
-    srcs = ["hello-world.rs"],
-    deps = ["@cxx.rs//:cxx"],
-)
-
-cc_library(
-    name = "hello-world-cc",
-    hdrs = ["hello-world.rs.h"],
-    srcs = ["hello-world.rs.cc"],
-    deps = [
-        "@cxx.rs//:core",
-        ":hello-world-rs",
-    ],
-)
-
 cc_binary(
     name = "hello-world",
     srcs = ["hello-world.cc"],
-    deps = [":hello-world-cc"],
 )
 
 load("@emsdk//emscripten_toolchain:wasm_rules.bzl", "wasm_cc_binary")
